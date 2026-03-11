@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Alumnos</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 15px; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; font-size: 1.8em; }
+        h2 { color: #34495e; font-size: 1.2em; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px;}
+        .section { margin-bottom: 25px; }
+        
+        /* Entradas apiladas para móvil */
+        .input-group { display: flex; flex-direction: column; gap: 10px; }
+        input, select, button { padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; width: 100%; font-size: 1em;}
+        
+        button { background-color: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; transition: background 0.3s; }
+        button:hover { background-color: #2ecc71; }
+        
+        /* Estilos de tabla base */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #2c3e50; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* Botones de acción (+ y -) */
+        .action-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+        .btn-action { padding: 8px; font-size: 0.85em; width: auto; flex: 1; min-width: 40%; text-align: center;}
+        .btn-add { background-color: #3498db; }
+        .btn-add:hover { background-color: #2980b9; }
+        .btn-sub { background-color: #e74c3c; }
+        .btn-sub:hover { background-color: #c0392b; }
+
+        /* Adaptación a pantallas de celular (Tarjetas) */
+        @media (max-width: 600px) {
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; } /* Ocultar cabeceras */
+            tr { border: 1px solid #ccc; margin-bottom: 15px; padding: 10px; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 40%; text-align: right; min-height: 30px;}
+            td:last-child { border-bottom: none; display: flex; flex-direction: column; padding-left: 0; text-align: center; gap: 10px;}
+            
+            /* Etiquetas para la vista de tarjeta */
+            td:before { position: absolute; left: 10px; width: 35%; white-space: nowrap; text-align: left; font-weight: bold; color: #2c3e50; }
+            td:nth-of-type(1):before { content: "Nombre:"; }
+            td:nth-of-type(2):before { content: "Clase:"; }
+            td:nth-of-type(3):before { content: "Asistencias:"; }
+            td:nth-of-type(4):before { content: "Participaciones:"; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Control de Alumnos</h1>
+
+        <div class="section">
+            <h2>1. Crear Clase</h2>
+            <div class="input-group">
+                <input type="text" id="className" placeholder="Ej. Compañeros">
+                <button onclick="addClass()">Agregar Clase</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. Registrar Alumno</h2>
+            <div class="input-group">
+                <input type="text" id="studentName" placeholder="Nombre completo">
+                <select id="classSelect">
+                    <option value="">Selecciona una clase...</option>
+                </select>
+                <button onclick="addStudent()">Registrar Alumno</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3. Gestión y Puntuaciones</h2>
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label for="filterClass" style="font-weight: bold; color: #2c3e50;">Vista de clase:</label>
+                <select id="filterClass" onchange="renderTable()">
+                    <option value="all">Todas las clases</option>
+                </select>
+            </div>
+
+            <table id="studentsTable">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Clase</th>
+                        <th>Asistencias</th>
+                        <th>Participaciones</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('appControlAlumnos')) || { classes: [], students: [] };
+
+        function saveData() {
+            localStorage.setItem('appControlAlumnos', JSON.stringify(db));
+        }
+
+        function updateDropdowns() {
+            const classSelect = document.getElementById('classSelect');
+            const filterClass = document.getElementById('filterClass');
+
+            classSelect.innerHTML = '<option value="">Selecciona una clase...</option>';
+            filterClass.innerHTML = '<option value="all">Todas las clases</option>';
+
+            db.classes.forEach(cls => {
+                classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+                filterClass.innerHTML += `<option value="${cls}">${cls}</option>`;
+            });
+        }
+
+        function addClass() {
+            const className = document.getElementById('className').value.trim();
+            if (className && !db.classes.includes(className)) {
+                db.classes.push(className);
+                saveData();
+                updateDropdowns();
+                document.getElementById('className').value = '';
+            } else {
+                alert('Ingresa un nombre de clase válido o que no esté repetido.');
+            }
+        }
+
+        function addStudent() {
+            const name = document.getElementById('studentName').value.trim();
+            const cls = document.getElementById('classSelect').value;
+
+            if (name && cls) {
+                const newStudent = {
+                    id: Date.now(),
+                    name: name,
+                    class: cls,
+                    attendance: 0,
+                    participation: 0
+                };
+                db.students.push(newStudent);
+                saveData();
+                renderTable();
+                document.getElementById('studentName').value = '';
+            } else {
+                alert('Asegúrate de ingresar el nombre y seleccionar una clase.');
+            }
+        }
+
+        // Función unificada para sumar o restar puntos
+        function updatePoints(id, type, amount) {
+            const student = db.students.find(s => s.id === id);
+            if (student) {
+                student[type] += amount;
+                
+                // Evitar números negativos
+                if (student[type] < 0) {
+                    student[type] = 0;
+                }
+                
+                saveData();
+                renderTable();
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('studentTableBody');
+            const filter = document.getElementById('filterClass').value;
+            tbody.innerHTML = '';
+
+            const filteredStudents = filter === 'all' 
+                ? db.students 
+                : db.students.filter(s => s.class === filter);
+
+            filteredStudents.forEach(student => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${student.name}</td>
+                        <td>${student.class}</td>
+                        <td style="font-weight:bold; color: #27ae60;">${student.attendance}</td>
+                        <td style="font-weight:bold; color: #2980b9;">${student.participation}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-add" onclick="updatePoints(${student.id}, 'attendance', 1)">+1 Asistencia</button>
+                                <button class="btn-action btn-sub" onclick="updatePoints(${student.id}, 'attendance', -1)">-1 Asistencia</button>
+                                <button class="btn-action btn-add" onclick="updatePoints(${student.id}, 'participation', 1)">+1 Partic.</button>
+                                <button class="btn-action btn-sub" onclick="updatePoints(${student.id}, 'participation', -1)">-1 Partic.</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        updateDropdowns();
+        renderTable();
+    </script>
+</body>
+</html>

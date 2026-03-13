@@ -11,20 +11,17 @@
         h2 { color: #34495e; font-size: 1.2em; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px;}
         .section { margin-bottom: 25px; }
         
-        /* Entradas apiladas para móvil */
         .input-group { display: flex; flex-direction: column; gap: 10px; }
         input, select, button { padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; width: 100%; font-size: 1em;}
         
         button { background-color: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; transition: background 0.3s; }
         button:hover { background-color: #2ecc71; }
         
-        /* Estilos de tabla base */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         th { background-color: #2c3e50; color: white; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         
-        /* Botones de acción (+ y -) */
         .action-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
         .btn-action { padding: 8px; font-size: 0.85em; width: auto; flex: 1; min-width: 40%; text-align: center;}
         .btn-add { background-color: #3498db; }
@@ -32,7 +29,6 @@
         .btn-sub { background-color: #e74c3c; }
         .btn-sub:hover { background-color: #c0392b; }
 
-        /* NUEVO: Estilos para Pestañas */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
         .tabs button { flex: 1; background-color: #ecf0f1; color: #2c3e50; }
         .tabs button.active { background-color: #3498db; color: white; }
@@ -40,29 +36,28 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Adaptación a pantallas de celular (Tarjetas) */
         @media (max-width: 600px) {
             table, thead, tbody, th, td, tr { display: block; }
-            thead tr { position: absolute; top: -9999px; left: -9999px; } /* Ocultar cabeceras */
+            thead tr { position: absolute; top: -9999px; left: -9999px; } 
             tr { border: 1px solid #ccc; margin-bottom: 15px; padding: 10px; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
             td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 40%; text-align: right; min-height: 30px;}
             td:last-child { border-bottom: none; display: flex; flex-direction: column; padding-left: 0; text-align: center; gap: 10px;}
             
-            /* Etiquetas para la vista de tarjeta */
             td:before { position: absolute; left: 10px; width: 35%; white-space: nowrap; text-align: left; font-weight: bold; color: #2c3e50; }
             
-            /* Etiquetas originales */
+            /* Etiquetas Tabla Alumnos */
             #studentsTable td:nth-of-type(1):before { content: "Nombre:"; }
             #studentsTable td:nth-of-type(2):before { content: "Clase:"; }
             #studentsTable td:nth-of-type(3):before { content: "Asistencias:"; }
-            #studentsTable td:nth-of-type(4):before { content: "Participaciones:"; }
+            #studentsTable td:nth-of-type(4):before { content: "Puntos:"; }
 
-            /* NUEVO: Etiquetas para la tabla de eventos */
+            /* Etiquetas Tabla Eventos */
             #eventTable td { padding-left: 50%; display: flex; align-items: center; justify-content: flex-end; }
-            #eventTable td:last-child { padding-left: 50%; display: flex; flex-direction: row; justify-content: flex-end; gap: 0;}
+            #eventTable td:last-child { padding-left: 50%; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;}
             #eventTable td:nth-of-type(1):before { content: "Alumno:"; width: 45%;}
-            #eventTable td:nth-of-type(2):before { content: "Asistirá:"; width: 45%;}
-            #eventTable td:nth-of-type(3):before { content: "Pago ($):"; width: 45%;}
+            #eventTable td:nth-of-type(2):before { content: "Total Abonado:"; width: 45%;}
+            #eventTable td:nth-of-type(3):before { content: "Asistirá:"; width: 45%;}
+            #eventTable td:nth-of-type(4):before { content: "Pago ($):"; width: 45%;}
         }
     </style>
 </head>
@@ -110,7 +105,7 @@
                             <th>Nombre</th>
                             <th>Clase</th>
                             <th>Asistencias</th>
-                            <th>Participaciones</th>
+                            <th>Puntos</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -139,16 +134,19 @@
                 </div>
 
                 <div id="eventDetails" style="display:none; overflow-x: auto;">
+                    <h3 id="totalEventMoney" style="text-align: right; color: #27ae60; margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Total Recaudado: $0.00</h3>
+                    
                     <table id="eventTable">
                         <thead>
                             <tr>
                                 <th>Alumno (Clase)</th>
+                                <th>Total Abonado</th> 
                                 <th>¿Asistirá?</th>
                                 <th>Pago / Cuota ($)</th>
                             </tr>
                         </thead>
                         <tbody id="eventTableBody">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -156,15 +154,13 @@
     </div>
 
     <script>
-        // NUEVO: Aseguramos que 'events' exista en tu base de datos sin romper los datos anteriores
         let db = JSON.parse(localStorage.getItem('appControlAlumnos')) || { classes: [], students: [], events: [] };
-        if (!db.events) db.events = []; // Parche de compatibilidad si ya tenías datos guardados
+        if (!db.events) db.events = []; 
 
         function saveData() {
             localStorage.setItem('appControlAlumnos', JSON.stringify(db));
         }
 
-        // --- TU CÓDIGO ORIGINAL ---
         function updateDropdowns() {
             const classSelect = document.getElementById('classSelect');
             const filterClass = document.getElementById('filterClass');
@@ -200,15 +196,12 @@
                     name: name,
                     class: cls,
                     attendance: 0,
-                    participation: 0
+                    participation: 0 
                 };
                 db.students.push(newStudent);
                 saveData();
                 renderTable();
-                
-                // Actualizar la tabla de eventos automáticamente si hay uno abierto
                 renderEventTable(); 
-                
                 document.getElementById('studentName').value = '';
             } else {
                 alert('Asegúrate de ingresar el nombre y seleccionar una clase.');
@@ -219,9 +212,11 @@
             const student = db.students.find(s => s.id === id);
             if (student) {
                 student[type] += amount;
-                if (student[type] < 0) {
+                
+                if (type === 'attendance' && student[type] < 0) {
                     student[type] = 0;
                 }
+                
                 saveData();
                 renderTable();
             }
@@ -247,8 +242,8 @@
                             <div class="action-buttons">
                                 <button class="btn-action btn-add" onclick="updatePoints(${student.id}, 'attendance', 1)">+1 Asistencia</button>
                                 <button class="btn-action btn-sub" onclick="updatePoints(${student.id}, 'attendance', -1)">-1 Asistencia</button>
-                                <button class="btn-action btn-add" onclick="updatePoints(${student.id}, 'participation', 1)">+1 Partic.</button>
-                                <button class="btn-action btn-sub" onclick="updatePoints(${student.id}, 'participation', -1)">-1 Partic.</button>
+                                <button class="btn-action btn-add" onclick="updatePoints(${student.id}, 'participation', 1)">+1 Punto</button>
+                                <button class="btn-action btn-sub" onclick="updatePoints(${student.id}, 'participation', -1)">-1 Punto</button>
                             </div>
                         </td>
                     </tr>
@@ -256,10 +251,7 @@
             });
         }
 
-        // --- NUEVAS FUNCIONES PARA EVENTOS Y PESTAÑAS ---
-        
         function switchTab(tab) {
-            // Manejar vista de pestañas
             document.getElementById('tabAlumnos').classList.remove('active');
             document.getElementById('tabEventos').classList.remove('active');
             document.getElementById('btnTabAlumnos').classList.remove('active');
@@ -271,7 +263,8 @@
             } else {
                 document.getElementById('tabEventos').classList.add('active');
                 document.getElementById('btnTabEventos').classList.add('active');
-                updateEventDropdown(); // Actualizar lista por si se agregaron alumnos
+                updateEventDropdown(); 
+                renderEventTable(); 
             }
         }
 
@@ -281,14 +274,12 @@
                 const newEvent = {
                     id: Date.now(),
                     name: name,
-                    attendees: {} // Formato: { "id_alumno": { attending: true, payment: 150 } }
+                    attendees: {} 
                 };
                 db.events.push(newEvent);
                 saveData();
                 updateEventDropdown();
                 document.getElementById('eventName').value = '';
-                
-                // Auto-seleccionar el evento recién creado
                 document.getElementById('eventSelect').value = newEvent.id;
                 renderEventTable();
             } else {
@@ -304,13 +295,14 @@
             db.events.forEach(ev => {
                 eventSelect.innerHTML += `<option value="${ev.id}">${ev.name}</option>`;
             });
-            eventSelect.value = currentValue; // Mantener selección si existía
+            eventSelect.value = currentValue; 
         }
 
         function renderEventTable() {
             const eventId = document.getElementById('eventSelect').value;
             const detailsDiv = document.getElementById('eventDetails');
             const tbody = document.getElementById('eventTableBody');
+            const totalMoneyLabel = document.getElementById('totalEventMoney');
             
             if (!eventId) {
                 detailsDiv.style.display = 'none';
@@ -320,74 +312,112 @@
             detailsDiv.style.display = 'block';
             tbody.innerHTML = '';
             
-            // Buscar el evento en la BD
             const ev = db.events.find(e => e.id == eventId);
             
-            // Si no hay alumnos registrados
             if(db.students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No hay alumnos registrados en la base de datos.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay alumnos registrados en la base de datos.</td></tr>`;
+                totalMoneyLabel.innerText = "Total Recaudado: $0.00";
                 return;
             }
 
-            // Mostrar lista general de todos los alumnos
+            let totalMoney = 0; 
+
             db.students.forEach(student => {
-                // Obtener datos del alumno para este evento específico (si existen)
-                const data = ev.attendees[student.id] || { attending: false, payment: '' };
+                const data = ev.attendees[student.id] || { attending: false, payment: 0 };
                 const isChecked = data.attending ? 'checked' : '';
-                const paymentVal = data.payment || '';
+                
+                // Extraemos el total que el alumno ha pagado hasta ahora PARA ESTE EVENTO
+                const paymentVal = parseFloat(data.payment) || 0;
+
+                if (data.attending) {
+                    totalMoney += paymentVal; // Se suma al total general del evento
+                }
 
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${student.name}</strong> <br><small style="color:gray;">${student.class}</small></td>
+                        <td>
+                            <strong>${student.name}</strong> <br>
+                            <small style="color:gray;">${student.class}</small><br>
+                        </td>
+                        <td style="font-weight:bold; color: #8e44ad; font-size: 1.1em;">
+                            $${paymentVal.toFixed(2)}
+                        </td>
                         <td>
                             <input type="checkbox" style="width: 25px; height: 25px; cursor: pointer;" 
                                 ${isChecked} 
                                 onchange="toggleEventAttendance(${ev.id}, ${student.id}, this.checked)">
                         </td>
                         <td>
-                            <input type="number" placeholder="$ 0.00" value="${paymentVal}" min="0" 
-                                style="width: 100px; padding: 8px;"
-                                onchange="updateEventPayment(${ev.id}, ${student.id}, this.value)"
-                                ${!data.attending ? 'disabled' : ''} id="pay_${ev.id}_${student.id}">
+                            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                                <input type="number" placeholder="Monto a ingresar..." min="0" 
+                                    style="width: 100%; padding: 8px; box-sizing: border-box;"
+                                    ${!data.attending ? 'disabled' : ''} id="transact_${ev.id}_${student.id}">
+                                
+                                <div style="display: flex; gap: 5px; width: 100%;">
+                                    <button class="btn-action btn-add" style="padding: 6px; font-size: 0.8em;" onclick="modifyPaymentAmount(${ev.id}, ${student.id}, 'add')" ${!data.attending ? 'disabled' : ''}>+ Abono</button>
+                                    <button class="btn-action btn-sub" style="padding: 6px; font-size: 0.8em;" onclick="modifyPaymentAmount(${ev.id}, ${student.id}, 'sub')" ${!data.attending ? 'disabled' : ''}>- Quitar</button>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 `;
             });
+
+            totalMoneyLabel.innerText = "Total Recaudado del Evento: $" + totalMoney.toFixed(2);
         }
 
         function toggleEventAttendance(eventId, studentId, isAttending) {
             const ev = db.events.find(e => e.id == eventId);
             
-            // Inicializar al alumno en el evento si no existía
             if (!ev.attendees[studentId]) {
-                ev.attendees[studentId] = { attending: false, payment: '' };
+                ev.attendees[studentId] = { attending: false, payment: 0 };
             }
             
             ev.attendees[studentId].attending = isAttending;
             
-            // Habilitar o deshabilitar la caja de texto del pago
-            const payInput = document.getElementById(`pay_${eventId}_${studentId}`);
-            if(isAttending) {
-                payInput.disabled = false;
-                payInput.focus();
-            } else {
-                payInput.disabled = true;
-                payInput.value = ''; // Borrar pago si cancela asistencia
-                ev.attendees[studentId].payment = '';
+            // Si le quitamos la asistencia, el abono se reinicia a cero
+            if(!isAttending) {
+                ev.attendees[studentId].payment = 0; 
             }
             
             saveData();
+            renderEventTable(); // Recarga la tabla
         }
 
-        function updateEventPayment(eventId, studentId, amount) {
+        // NUEVO LÓGICA: Leer la casilla de texto sin abrir ventana emergente
+        function modifyPaymentAmount(eventId, studentId, action) {
             const ev = db.events.find(e => e.id == eventId);
+            if (!ev || !ev.attendees[studentId] || !ev.attendees[studentId].attending) return;
+
+            // Buscamos la casilla de texto correspondiente a ese alumno
+            const inputElement = document.getElementById(`transact_${eventId}_${studentId}`);
+            const inputValue = inputElement.value.trim();
             
-            if (!ev.attendees[studentId]) {
-                ev.attendees[studentId] = { attending: true, payment: '' };
+            if (inputValue !== '') {
+                const amount = parseFloat(inputValue);
+                
+                if (!isNaN(amount) && amount > 0) {
+                    // Tomamos lo que ya tenía ahorrado/abonado
+                    let currentVal = parseFloat(ev.attendees[studentId].payment) || 0;
+                    
+                    if (action === 'add') {
+                        currentVal += amount;
+                    } else {
+                        currentVal -= amount;
+                        if (currentVal < 0) currentVal = 0; // Evitar que el saldo sea negativo
+                    }
+                    
+                    // Guardamos el nuevo total del alumno
+                    ev.attendees[studentId].payment = currentVal;
+                    saveData();
+                    renderEventTable(); // Recargamos para ver los cambios reflejados instantáneamente
+                } else {
+                    alert('Por favor ingrese un número mayor a 0.');
+                }
+            } else {
+                // Si le dan clic al botón pero la casilla está vacía
+                alert('Escribe una cantidad en la casilla blanca primero.');
             }
-            
-            ev.attendees[studentId].payment = amount;
-            saveData();
         }
 
         // --- INICIALIZACIÓN ---

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Alumnos</title>
     <style>
-        /* ESTILOS GENERALES (COMPUTADORA Y BASE) */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 15px; background-color: #f4f7f6; color: #333; }
         .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         h1 { color: #2c3e50; text-align: center; font-size: 1.8em; }
@@ -13,7 +12,7 @@
         .section { margin-bottom: 25px; }
         
         .input-group { display: flex; flex-direction: column; gap: 10px; }
-        input, select, button { padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; width: 100%; font-size: 16px; }
+        input, select, button { padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; width: 100%; font-size: 1em;}
         
         button { background-color: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; transition: background 0.3s; }
         button:hover { background-color: #2ecc71; }
@@ -37,295 +36,129 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* NUEVO: Estilos para el panel de usuario */
-        .user-panel { text-align: center; background: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4e6f1;}
-        .user-panel strong { color: #2980b9; font-size: 1.2em; }
-        .user-panel small { color: #7f8c8d; font-size: 1em; display: block; margin-top: 5px;}
-        .btn-logout { background-color: #e74c3c; margin-top: 10px; padding: 8px; font-size: 0.9em; width: auto; display: inline-block;}
-        .btn-logout:hover { background-color: #c0392b; }
-
-        /* DISEÑO EXCLUSIVO PARA CELULARES (TARJETAS) */
         @media (max-width: 600px) {
-            body { margin: 10px 5px; }
-            .container { padding: 15px; width: 100%; box-sizing: border-box; }
-            
-            .tabs button { padding: 15px 5px; font-size: 0.9em; } 
-
-            table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box;}
+            table, thead, tbody, th, td, tr { display: block; }
             thead tr { position: absolute; top: -9999px; left: -9999px; } 
+            tr { border: 1px solid #ccc; margin-bottom: 15px; padding: 10px; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 40%; text-align: right; min-height: 30px;}
+            td:last-child { border-bottom: none; display: flex; flex-direction: column; padding-left: 0; text-align: center; gap: 10px;}
             
-            tr { margin-bottom: 20px; padding: 15px; border-radius: 12px; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.08); border: 1px solid #eaeaea;}
+            td:before { position: absolute; left: 10px; width: 35%; white-space: nowrap; text-align: left; font-weight: bold; color: #2c3e50; }
             
-            td { border: none; border-bottom: 1px solid #f0f0f0; position: relative; padding: 12px 0; text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;}
-            td:last-child { border-bottom: none; padding-bottom: 0;}
-            
-            td:before { font-weight: bold; color: #7f8c8d; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px;}
-            
+            /* Etiquetas Tabla Alumnos */
             #studentsTable td:nth-of-type(1):before { content: "Nombre:"; }
             #studentsTable td:nth-of-type(2):before { content: "Clase:"; }
             #studentsTable td:nth-of-type(3):before { content: "Asistencias:"; }
             #studentsTable td:nth-of-type(4):before { content: "Puntos:"; }
-            #studentsTable td:nth-of-type(5):before { content: "Acciones:"; }
 
-            #eventTable td:nth-of-type(1):before { content: "Alumno:"; }
-            #eventTable td:nth-of-type(2):before { content: "Total Abonado:"; }
-            #eventTable td:nth-of-type(3):before { content: "Asistirá:"; }
-            #eventTable td:nth-of-type(4):before { content: "Transacción ($):"; }
-
-            input[type="checkbox"] { transform: scale(1.6); margin: 10px 10px 10px 5px; align-self: flex-start;}
-            input[type="number"] { padding: 15px; } 
-            
-            .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-            .btn-action { padding: 12px 5px; font-size: 0.9em; }
+            /* Etiquetas Tabla Eventos */
+            #eventTable td { padding-left: 50%; display: flex; align-items: center; justify-content: flex-end; }
+            #eventTable td:last-child { padding-left: 50%; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;}
+            #eventTable td:nth-of-type(1):before { content: "Alumno:"; width: 45%;}
+            #eventTable td:nth-of-type(2):before { content: "Total Abonado:"; width: 45%;}
+            #eventTable td:nth-of-type(3):before { content: "Asistirá:"; width: 45%;}
+            #eventTable td:nth-of-type(4):before { content: "Pago ($):"; width: 45%;}
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Control de Alumnos</h1>
 
-    <div id="loginContainer" class="container" style="max-width: 400px; margin-top: 50px;">
-        <h1>Identificación de Club</h1>
-        <p style="text-align: center; color: #7f8c8d; margin-bottom: 20px;">Ingresa tus datos para acceder al panel de control.</p>
-        
-        <div class="input-group">
-            <input type="text" id="loginNombre" placeholder="Tu Nombre">
-            <input type="text" id="loginApellido" placeholder="Tu Apellido">
-            <input type="text" id="loginClub" placeholder="Nombre del Club / Organización">
-            <button onclick="iniciarSesion()" style="margin-top: 10px;">Ingresar al Sistema</button>
+        <div class="tabs">
+            <button id="btnTabAlumnos" class="active" onclick="switchTab('alumnos')">Alumnos y Clases</button>
+            <button id="btnTabEventos" onclick="switchTab('eventos')">Eventos y Cuotas</button>
         </div>
-    </div>
 
-    <div id="appContainer" style="display: none;">
-        <div class="container">
-            <h1>Control de Alumnos</h1>
-
-            <div class="user-panel">
-                <strong id="displayUserName">Usuario</strong>
-                <small id="displayClubName">Club</small>
-                <small id="displayUserId" style="font-size: 0.8em; color: #bdc3c7;">ID: </small>
-                <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+        <div id="tabAlumnos" class="tab-content active">
+            <div class="section">
+                <h2>1. Crear Clase</h2>
+                <div class="input-group">
+                    <input type="text" id="className" placeholder="Ej. Compañeros">
+                    <button onclick="addClass()">Agregar Clase</button>
+                </div>
             </div>
 
-            <div class="tabs">
-                <button id="btnTabAlumnos" class="active" onclick="switchTab('alumnos')">Alumnos y Clases</button>
-                <button id="btnTabEventos" onclick="switchTab('eventos')">Eventos y Cuotas</button>
+            <div class="section">
+                <h2>2. Registrar Alumno</h2>
+                <div class="input-group">
+                    <input type="text" id="studentName" placeholder="Nombre completo">
+                    <select id="classSelect">
+                        <option value="">Selecciona una clase...</option>
+                    </select>
+                    <button onclick="addStudent()">Registrar Alumno</button>
+                </div>
             </div>
 
-            <div id="tabAlumnos" class="tab-content active">
-                <div class="section">
-                    <h2>1. Crear Clase</h2>
-                    <div class="input-group">
-                        <input type="text" id="className" placeholder="Ej. Compañeros">
-                        <button onclick="addClass()">Agregar Clase</button>
-                    </div>
+            <div class="section">
+                <h2>3. Gestión y Puntuaciones</h2>
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label for="filterClass" style="font-weight: bold; color: #2c3e50;">Vista de clase:</label>
+                    <select id="filterClass" onchange="renderTable()">
+                        <option value="all">Todas las clases</option>
+                    </select>
                 </div>
 
-                <div class="section">
-                    <h2>2. Registrar Alumno</h2>
-                    <div class="input-group">
-                        <input type="text" id="studentName" placeholder="Nombre completo">
-                        <select id="classSelect">
-                            <option value="">Selecciona una clase...</option>
-                        </select>
-                        <button onclick="addStudent()">Registrar Alumno</button>
-                    </div>
+                <table id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Clase</th>
+                            <th>Asistencias</th>
+                            <th>Puntos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tabEventos" class="tab-content">
+            <div class="section">
+                <h2>1. Crear Nuevo Evento</h2>
+                <div class="input-group">
+                    <input type="text" id="eventName" placeholder="Ej. Viaje Escolar / Graduación">
+                    <button onclick="addEvent()">Guardar Evento</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>2. Lista General y Cuotas</h2>
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label for="eventSelect" style="font-weight: bold; color: #2c3e50;">Selecciona un evento:</label>
+                    <select id="eventSelect" onchange="renderEventTable()">
+                        <option value="">Selecciona un evento para ver la lista...</option>
+                    </select>
                 </div>
 
-                <div class="section">
-                    <h2>3. Gestión y Puntuaciones</h2>
-                    <div class="input-group" style="margin-bottom: 15px;">
-                        <label for="filterClass" style="font-weight: bold; color: #2c3e50;">Vista de clase:</label>
-                        <select id="filterClass" onchange="renderTable()">
-                            <option value="all">Todas las clases</option>
-                        </select>
-                    </div>
-
-                    <table id="studentsTable">
+                <div id="eventDetails" style="display:none; overflow-x: auto;">
+                    <h3 id="totalEventMoney" style="text-align: right; color: #27ae60; margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Total Recaudado: $0.00</h3>
+                    
+                    <table id="eventTable">
                         <thead>
                             <tr>
-                                <th>Nombre</th>
-                                <th>Clase</th>
-                                <th>Asistencias</th>
-                                <th>Puntos</th>
-                                <th>Acciones</th>
+                                <th>Alumno (Clase)</th>
+                                <th>Total Abonado</th> 
+                                <th>¿Asistirá?</th>
+                                <th>Pago / Cuota ($)</th>
                             </tr>
                         </thead>
-                        <tbody id="studentTableBody">
+                        <tbody id="eventTableBody">
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <div id="tabEventos" class="tab-content">
-                <div class="section">
-                    <h2>1. Crear Nuevo Evento</h2>
-                    <div class="input-group">
-                        <input type="text" id="eventName" placeholder="Ej. Viaje Escolar / Graduación">
-                        <button onclick="addEvent()">Guardar Evento</button>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2>2. Lista General y Cuotas</h2>
-                    <div class="input-group" style="margin-bottom: 15px;">
-                        <label for="eventSelect" style="font-weight: bold; color: #2c3e50;">Selecciona un evento:</label>
-                        <select id="eventSelect" onchange="renderEventTable()">
-                            <option value="">Selecciona un evento para ver la lista...</option>
-                        </select>
-                    </div>
-
-                    <div id="eventDetails" style="display:none; overflow-x: auto;">
-                        <h3 id="totalEventMoney" style="text-align: right; color: #27ae60; margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Total Recaudado: $0.00</h3>
-                        
-                        <table id="eventTable">
-                            <thead>
-                                <tr>
-                                    <th>Alumno (Clase)</th>
-                                    <th>Total Abonado</th> 
-                                    <th>¿Asistirá?</th>
-                                    <th>Pago / Cuota ($)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="eventTableBody">
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // CONFIGURACIÓN DE LA API
-        // ==========================================
-        // Asegúrate de que Python (Flask) esté corriendo en este puerto
-        const API_URL = 'http://localhost:5000/api'; 
-        
-        let sessionData = JSON.parse(localStorage.getItem('appControlAlumnos_session'));
-        let db = { classes: [], students: [], events: [] };
+        let db = JSON.parse(localStorage.getItem('appControlAlumnos')) || { classes: [], students: [], events: [] };
+        if (!db.events) db.events = []; 
 
-        // ==========================================
-        // SISTEMA DE SESIÓN Y CONEXIÓN A MYSQL
-        // ==========================================
-        async function checkSession() {
-            if (sessionData && sessionData.id_unico) {
-                // Ocultar login, mostrar app
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'block';
-                
-                document.getElementById('displayUserName').innerText = `👤 ${sessionData.nombre} ${sessionData.apellido}`;
-                document.getElementById('displayClubName').innerText = `🛡️ Club: ${sessionData.club}`;
-                document.getElementById('displayUserId').innerText = `ID de Conexión: ${sessionData.id_unico}`;
-
-                // --- DESCARGAR DATOS DESDE MYSQL ---
-                try {
-                    const response = await fetch(`${API_URL}/data/${sessionData.id_unico}`);
-                    if (response.ok) {
-                        db = await response.json();
-                        // Asegurarnos de que la estructura base exista
-                        if (!db.classes) db.classes = [];
-                        if (!db.students) db.students = [];
-                        if (!db.events) db.events = [];
-                    } else {
-                        console.error("Error al obtener los datos de la base de datos.");
-                    }
-                } catch (error) {
-                    console.error("No se pudo conectar con la API de Python.", error);
-                    alert("No se pudo conectar a la base de datos. Se usará una base de datos temporal vacía. Asegúrate de ejecutar el archivo Python.");
-                }
-                
-                // Refrescar vistas con los datos traídos
-                updateDropdowns();
-                renderTable();
-                updateEventDropdown();
-            } else {
-                document.getElementById('loginContainer').style.display = 'block';
-                document.getElementById('appContainer').style.display = 'none';
-            }
-        }
-
-        async function iniciarSesion() {
-            const nombre = document.getElementById('loginNombre').value.trim();
-            const apellido = document.getElementById('loginApellido').value.trim();
-            const club = document.getElementById('loginClub').value.trim();
-
-            if (nombre && apellido && club) {
-                const iniciales = (nombre.charAt(0) + apellido.charAt(0)).toUpperCase();
-                const clubFormateado = club.substring(0,4).toUpperCase();
-                // Generamos un ID predecible para que la misma persona pueda volver a entrar
-                const idGenerado = `${clubFormateado}-${iniciales}`;
-
-                sessionData = {
-                    nombre: nombre,
-                    apellido: apellido,
-                    club: club,
-                    id_unico: idGenerado
-                };
-
-                try {
-                    // Registrar el usuario en MySQL
-                    await fetch(`${API_URL}/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(sessionData)
-                    });
-
-                    localStorage.setItem('appControlAlumnos_session', JSON.stringify(sessionData));
-                    checkSession(); 
-                } catch (error) {
-                    alert("Error al conectar con el servidor. ¿Está ejecutándose app.py en Python?");
-                    console.error(error);
-                }
-            } else {
-                alert("Por favor, completa todos los campos para continuar.");
-            }
-        }
-
-        function cerrarSesion() {
-            localStorage.removeItem('appControlAlumnos_session');
-            sessionData = null;
-            document.getElementById('loginNombre').value = '';
-            document.getElementById('loginApellido').value = '';
-            document.getElementById('loginClub').value = '';
-            db = { classes: [], students: [], events: [] }; // Limpiar datos en memoria
-            checkSession();
-        }
-
-        // ==========================================
-        // FUNCIÓN CLAVE: GUARDAR EN MYSQL
-        // ==========================================
-        async function saveData() {
-            // Guardamos localmente por si la API falla
+        function saveData() {
             localStorage.setItem('appControlAlumnos', JSON.stringify(db));
-
-            if (sessionData && sessionData.id_unico) {
-                try {
-                    await fetch(`${API_URL}/data`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            id_club: sessionData.id_unico,
-                            db: db
-                        })
-                    });
-                } catch (error) {
-                    console.error("Error al guardar los datos en MySQL:", error);
-                }
-            }
-        }
-
-        // ==========================================
-        // RESTO DE LA LÓGICA DE LA APLICACIÓN 
-        // ==========================================
-
-        function getStudentTotal(studentId) {
-            let total = 0;
-            db.events.forEach(ev => {
-                if (ev.attendees && ev.attendees[studentId] && ev.attendees[studentId].payment) {
-                    total += parseFloat(ev.attendees[studentId].payment) || 0;
-                }
-            });
-            return total;
         }
 
         function updateDropdowns() {
@@ -345,7 +178,7 @@
             const className = document.getElementById('className').value.trim();
             if (className && !db.classes.includes(className)) {
                 db.classes.push(className);
-                saveData(); 
+                saveData();
                 updateDropdowns();
                 document.getElementById('className').value = '';
             } else {
@@ -366,7 +199,7 @@
                     participation: 0 
                 };
                 db.students.push(newStudent);
-                saveData(); 
+                saveData();
                 renderTable();
                 renderEventTable(); 
                 document.getElementById('studentName').value = '';
@@ -379,8 +212,12 @@
             const student = db.students.find(s => s.id === id);
             if (student) {
                 student[type] += amount;
-                if (type === 'attendance' && student[type] < 0) { student[type] = 0; }
-                saveData(); 
+                
+                if (type === 'attendance' && student[type] < 0) {
+                    student[type] = 0;
+                }
+                
+                saveData();
                 renderTable();
             }
         }
@@ -390,16 +227,18 @@
             const filter = document.getElementById('filterClass').value;
             tbody.innerHTML = '';
 
-            const filteredStudents = filter === 'all' ? db.students : db.students.filter(s => s.class === filter);
+            const filteredStudents = filter === 'all' 
+                ? db.students 
+                : db.students.filter(s => s.class === filter);
 
             filteredStudents.forEach(student => {
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${student.name}</strong></td>
+                        <td>${student.name}</td>
                         <td>${student.class}</td>
                         <td style="font-weight:bold; color: #27ae60;">${student.attendance}</td>
                         <td style="font-weight:bold; color: #2980b9;">${student.participation}</td>
-                        <td style="width: 100%;">
+                        <td>
                             <div class="action-buttons">
                                 <button class="btn-action btn-add" onclick="updatePoints(${student.id}, 'attendance', 1)">+1 Asistencia</button>
                                 <button class="btn-action btn-sub" onclick="updatePoints(${student.id}, 'attendance', -1)">-1 Asistencia</button>
@@ -438,7 +277,7 @@
                     attendees: {} 
                 };
                 db.events.push(newEvent);
-                saveData(); 
+                saveData();
                 updateEventDropdown();
                 document.getElementById('eventName').value = '';
                 document.getElementById('eventSelect').value = newEvent.id;
@@ -452,6 +291,7 @@
             const eventSelect = document.getElementById('eventSelect');
             const currentValue = eventSelect.value;
             eventSelect.innerHTML = '<option value="">Selecciona un evento para ver la lista...</option>';
+            
             db.events.forEach(ev => {
                 eventSelect.innerHTML += `<option value="${ev.id}">${ev.name}</option>`;
             });
@@ -475,78 +315,115 @@
             const ev = db.events.find(e => e.id == eventId);
             
             if(db.students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay alumnos registrados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay alumnos registrados en la base de datos.</td></tr>`;
                 totalMoneyLabel.innerText = "Total Recaudado: $0.00";
                 return;
             }
 
             let totalMoney = 0; 
+
             db.students.forEach(student => {
                 const data = ev.attendees[student.id] || { attending: false, payment: 0 };
                 const isChecked = data.attending ? 'checked' : '';
+                
+                // Extraemos el total que el alumno ha pagado hasta ahora PARA ESTE EVENTO
                 const paymentVal = parseFloat(data.payment) || 0;
 
-                if (data.attending) { totalMoney += paymentVal; }
+                if (data.attending) {
+                    totalMoney += paymentVal; // Se suma al total general del evento
+                }
 
                 tbody.innerHTML += `
                     <tr>
                         <td>
-                            <strong style="font-size: 1.1em;">${student.name}</strong> <br>
-                            <small style="color:gray;">${student.class}</small>
+                            <strong>${student.name}</strong> <br>
+                            <small style="color:gray;">${student.class}</small><br>
                         </td>
-                        <td style="font-weight:bold; color: #8e44ad; font-size: 1.2em;">$${paymentVal.toFixed(2)}</td>
-                        <td><input type="checkbox" style="cursor: pointer;" ${isChecked} onchange="toggleEventAttendance(${ev.id}, ${student.id}, this.checked)"></td>
-                        <td style="width: 100%;">
-                            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-                                <input type="number" placeholder="Monto a ingresar..." min="0" style="width: 100%; box-sizing: border-box;" ${!data.attending ? 'disabled' : ''} id="transact_${ev.id}_${student.id}">
-                                <div class="action-buttons">
-                                    <button class="btn-action btn-add" onclick="modifyPaymentAmount(${ev.id}, ${student.id}, 'add')" ${!data.attending ? 'disabled' : ''}>+ Abono</button>
-                                    <button class="btn-action btn-sub" onclick="modifyPaymentAmount(${ev.id}, ${student.id}, 'sub')" ${!data.attending ? 'disabled' : ''}>- Quitar</button>
+                        <td style="font-weight:bold; color: #8e44ad; font-size: 1.1em;">
+                            $${paymentVal.toFixed(2)}
+                        </td>
+                        <td>
+                            <input type="checkbox" style="width: 25px; height: 25px; cursor: pointer;" 
+                                ${isChecked} 
+                                onchange="toggleEventAttendance(${ev.id}, ${student.id}, this.checked)">
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                                <input type="number" placeholder="Monto a ingresar..." min="0" 
+                                    style="width: 100%; padding: 8px; box-sizing: border-box;"
+                                    ${!data.attending ? 'disabled' : ''} id="transact_${ev.id}_${student.id}">
+                                
+                                <div style="display: flex; gap: 5px; width: 100%;">
+                                    <button class="btn-action btn-add" style="padding: 6px; font-size: 0.8em;" onclick="modifyPaymentAmount(${ev.id}, ${student.id}, 'add')" ${!data.attending ? 'disabled' : ''}>+ Abono</button>
+                                    <button class="btn-action btn-sub" style="padding: 6px; font-size: 0.8em;" onclick="modifyPaymentAmount(${ev.id}, ${student.id}, 'sub')" ${!data.attending ? 'disabled' : ''}>- Quitar</button>
                                 </div>
                             </div>
                         </td>
                     </tr>
                 `;
             });
+
             totalMoneyLabel.innerText = "Total Recaudado del Evento: $" + totalMoney.toFixed(2);
         }
 
         function toggleEventAttendance(eventId, studentId, isAttending) {
             const ev = db.events.find(e => e.id == eventId);
-            if (!ev.attendees[studentId]) { ev.attendees[studentId] = { attending: false, payment: 0 }; }
+            
+            if (!ev.attendees[studentId]) {
+                ev.attendees[studentId] = { attending: false, payment: 0 };
+            }
+            
             ev.attendees[studentId].attending = isAttending;
-            if(!isAttending) { ev.attendees[studentId].payment = 0; }
-            saveData(); 
-            renderEventTable(); 
+            
+            // Si le quitamos la asistencia, el abono se reinicia a cero
+            if(!isAttending) {
+                ev.attendees[studentId].payment = 0; 
+            }
+            
+            saveData();
+            renderEventTable(); // Recarga la tabla
         }
 
+        // NUEVO LÓGICA: Leer la casilla de texto sin abrir ventana emergente
         function modifyPaymentAmount(eventId, studentId, action) {
             const ev = db.events.find(e => e.id == eventId);
             if (!ev || !ev.attendees[studentId] || !ev.attendees[studentId].attending) return;
 
+            // Buscamos la casilla de texto correspondiente a ese alumno
             const inputElement = document.getElementById(`transact_${eventId}_${studentId}`);
             const inputValue = inputElement.value.trim();
             
             if (inputValue !== '') {
                 const amount = parseFloat(inputValue);
+                
                 if (!isNaN(amount) && amount > 0) {
+                    // Tomamos lo que ya tenía ahorrado/abonado
                     let currentVal = parseFloat(ev.attendees[studentId].payment) || 0;
-                    if (action === 'add') { currentVal += amount; } 
-                    else { currentVal -= amount; if (currentVal < 0) currentVal = 0; }
                     
+                    if (action === 'add') {
+                        currentVal += amount;
+                    } else {
+                        currentVal -= amount;
+                        if (currentVal < 0) currentVal = 0; // Evitar que el saldo sea negativo
+                    }
+                    
+                    // Guardamos el nuevo total del alumno
                     ev.attendees[studentId].payment = currentVal;
-                    saveData(); 
-                    renderEventTable(); 
+                    saveData();
+                    renderEventTable(); // Recargamos para ver los cambios reflejados instantáneamente
                 } else {
                     alert('Por favor ingrese un número mayor a 0.');
                 }
             } else {
+                // Si le dan clic al botón pero la casilla está vacía
                 alert('Escribe una cantidad en la casilla blanca primero.');
             }
         }
 
-        // --- INICIAR APLICACIÓN ---
-        checkSession();
+        // --- INICIALIZACIÓN ---
+        updateDropdowns();
+        renderTable();
+        updateEventDropdown();
     </script>
 </body>
 </html>

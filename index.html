@@ -84,13 +84,21 @@
 
     <div id="loginContainer" class="container" style="max-width: 400px; margin-top: 50px;">
         <h1>Identificación de Club</h1>
-        <p style="text-align: center; color: #7f8c8d; margin-bottom: 20px;">Ingresa tus datos para acceder al panel de control.</p>
         
+        <p style="text-align: center; color: #7f8c8d; margin-bottom: 20px;">Crea un nuevo panel para tu club.</p>
         <div class="input-group">
             <input type="text" id="loginNombre" placeholder="Tu Nombre">
             <input type="text" id="loginApellido" placeholder="Tu Apellido">
             <input type="text" id="loginClub" placeholder="Nombre del Club / Organización">
-            <button onclick="iniciarSesion()" style="margin-top: 10px;">Ingresar al Sistema</button>
+            <button onclick="iniciarSesion()" style="margin-top: 10px;">Registrar y Entrar</button>
+        </div>
+
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;">
+
+        <p style="text-align: center; color: #7f8c8d; margin-bottom: 15px;">¿Ya tienes una cuenta?</p>
+        <div class="input-group">
+            <input type="text" id="loginId" placeholder="Ej. POLA-JG">
+            <button onclick="iniciarSesionConId()" style="background-color: #3498db;">Entrar con mi ID</button>
         </div>
     </div>
 
@@ -255,29 +263,62 @@
                 // Generamos un ID predecible para que la misma persona pueda volver a entrar
                 const idGenerado = `${clubFormateado}-${iniciales}`;
 
-                sessionData = {
-                    nombre: nombre,
-                    apellido: apellido,
-                    club: club,
-                    id_unico: idGenerado
-                };
+                const sessionDataTemp = { nombre, apellido, club, id_unico: idGenerado };
 
                 try {
-                    // Registrar el usuario en MySQL
-                    await fetch(`${API_URL}/login`, {
+                    const res = await fetch(`${API_URL}/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(sessionData)
+                        body: JSON.stringify(sessionDataTemp)
                     });
-
-                    localStorage.setItem('appControlAlumnos_session', JSON.stringify(sessionData));
-                    checkSession(); 
+                    
+                    const responseData = await res.json();
+                    
+                    if (responseData.status === "success") {
+                        // Guardamos los datos oficiales que nos devuelve la base de datos
+                        sessionData = responseData.user_data;
+                        localStorage.setItem('appControlAlumnos_session', JSON.stringify(sessionData));
+                        checkSession(); 
+                    }
                 } catch (error) {
-                    alert("Error al conectar con el servidor. ¿Está ejecutándose app.py en Python?");
+                    alert("Error al conectar con el servidor.");
                     console.error(error);
                 }
             } else {
-                alert("Por favor, completa todos los campos para continuar.");
+                alert("Por favor, completa todos los campos para crear una cuenta.");
+            }
+        }
+
+        // --- NUEVA FUNCIÓN: INICIAR SESIÓN SOLO CON ID ---
+        async function iniciarSesionConId() {
+            const idConexion = document.getElementById('loginId').value.trim().toUpperCase();
+            
+            if (!idConexion) {
+                alert("Por favor, ingresa tu ID de conexión.");
+                return;
+            }
+
+            try {
+                // Le mandamos solo el ID al servidor
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_unico: idConexion })
+                });
+
+                const responseData = await res.json();
+
+                if (responseData.status === "success" && responseData.user_data) {
+                    // El servidor encontró el ID y nos devolvió el nombre y el club
+                    sessionData = responseData.user_data;
+                    localStorage.setItem('appControlAlumnos_session', JSON.stringify(sessionData));
+                    checkSession();
+                } else {
+                    alert("No se encontró ningún club registrado con ese ID.");
+                }
+            } catch (error) {
+                alert("Error al intentar iniciar sesión. Revisa tu conexión.");
+                console.error(error);
             }
         }
 
@@ -287,6 +328,7 @@
             document.getElementById('loginNombre').value = '';
             document.getElementById('loginApellido').value = '';
             document.getElementById('loginClub').value = '';
+            document.getElementById('loginId').value = ''; // Limpiar el campo de ID
             db = { classes: [], students: [], events: [] }; // Limpiar datos en memoria
             checkSession();
         }

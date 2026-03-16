@@ -198,8 +198,8 @@
         // ==========================================
         // CONFIGURACIÓN DE LA API
         // ==========================================
-        // Asegúrate de que Python (Flask) esté corriendo en este puerto
-        const API_URL = 'http://localhost:5000/api'; 
+        // Conexión oficial al servidor en la nube (Render)
+        const API_URL = 'https://api-alumnos-backend.onrender.com/api'; 
         
         let sessionData = JSON.parse(localStorage.getItem('appControlAlumnos_session'));
         let db = { classes: [], students: [], events: [] };

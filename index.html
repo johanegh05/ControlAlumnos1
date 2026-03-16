@@ -1,211 +1,594 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Alumnos</title>
-    <style>
-        /* (Tus estilos se mantienen iguales, omitidos por brevedad para enfocar en el JS) */
-        body { font-family: 'Segoe UI', sans-serif; margin: 15px; background-color: #f4f7f6; color: #333; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .section { margin-bottom: 25px; }
-        .input-group { display: flex; flex-direction: column; gap: 10px; }
-        input, select, button { padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
-        button { background-color: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .user-panel { text-align: center; background: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Alumnos</title>
+    <style>
+        /* ESTILOS GENERALES (COMPUTADORA Y BASE) */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 15px; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; font-size: 1.8em; }
+        h2 { color: #34495e; font-size: 1.2em; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px;}
+        .section { margin-bottom: 25px; }
+        
+        .input-group { display: flex; flex-direction: column; gap: 10px; }
+        input, select, button { padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; width: 100%; font-size: 16px; }
+        
+        button { background-color: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; transition: background 0.3s; }
+        button:hover { background-color: #2ecc71; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #2c3e50; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        .action-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+        .btn-action { padding: 8px; font-size: 0.85em; width: auto; flex: 1; min-width: 40%; text-align: center;}
+        .btn-add { background-color: #3498db; }
+        .btn-add:hover { background-color: #2980b9; }
+        .btn-sub { background-color: #e74c3c; }
+        .btn-sub:hover { background-color: #c0392b; }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+        .tabs button { flex: 1; background-color: #ecf0f1; color: #2c3e50; }
+        .tabs button.active { background-color: #3498db; color: white; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* NUEVO: Estilos para el panel de usuario */
+        .user-panel { text-align: center; background: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4e6f1;}
+        .user-panel strong { color: #2980b9; font-size: 1.2em; }
+        .user-panel small { color: #7f8c8d; font-size: 1em; display: block; margin-top: 5px;}
+        .btn-logout { background-color: #e74c3c; margin-top: 10px; padding: 8px; font-size: 0.9em; width: auto; display: inline-block;}
+        .btn-logout:hover { background-color: #c0392b; }
+
+        /* DISEÑO EXCLUSIVO PARA CELULARES (TARJETAS) */
+        @media (max-width: 600px) {
+            body { margin: 10px 5px; }
+            .container { padding: 15px; width: 100%; box-sizing: border-box; }
+            
+            .tabs button { padding: 15px 5px; font-size: 0.9em; } 
+
+            table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box;}
+            thead tr { position: absolute; top: -9999px; left: -9999px; } 
+            
+            tr { margin-bottom: 20px; padding: 15px; border-radius: 12px; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.08); border: 1px solid #eaeaea;}
+            
+            td { border: none; border-bottom: 1px solid #f0f0f0; position: relative; padding: 12px 0; text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;}
+            td:last-child { border-bottom: none; padding-bottom: 0;}
+            
+            td:before { font-weight: bold; color: #7f8c8d; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px;}
+            
+            #studentsTable td:nth-of-type(1):before { content: "Nombre:"; }
+            #studentsTable td:nth-of-type(2):before { content: "Clase:"; }
+            #studentsTable td:nth-of-type(3):before { content: "Asistencias:"; }
+            #studentsTable td:nth-of-type(4):before { content: "Puntos:"; }
+            #studentsTable td:nth-of-type(5):before { content: "Acciones:"; }
+
+            #eventTable td:nth-of-type(1):before { content: "Alumno:"; }
+            #eventTable td:nth-of-type(2):before { content: "Total Abonado:"; }
+            #eventTable td:nth-of-type(3):before { content: "Asistirá:"; }
+            #eventTable td:nth-of-type(4):before { content: "Transacción ($):"; }
+
+            input[type="checkbox"] { transform: scale(1.6); margin: 10px 10px 10px 5px; align-self: flex-start;}
+            input[type="number"] { padding: 15px; } 
+            
+            .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+            .btn-action { padding: 12px 5px; font-size: 0.9em; }
+        }
+    </style>
 </head>
 <body>
 
-    <div id="loginContainer" class="container" style="max-width: 400px; margin-top: 50px;">
-        <h1>Identificación de Club</h1>
-        <div class="input-group">
-            <input type="text" id="loginNombre" placeholder="Tu Nombre">
-            <input type="text" id="loginApellido" placeholder="Tu Apellido">
-            <input type="text" id="loginClub" placeholder="Nombre del Club">
-            <button onclick="iniciarSesion()">Registrar y Entrar</button>
-        </div>
-        <hr>
-        <div class="input-group">
-            <input type="text" id="loginId" placeholder="Ej. POLA-JG">
-            <button onclick="iniciarSesionConId()" style="background-color: #3498db;">Entrar con mi ID</button>
-        </div>
-    </div>
+    <div id="loginContainer" class="container" style="max-width: 400px; margin-top: 50px;">
+        <h1>Identificación de Club</h1>
+        
+        <p style="text-align: center; color: #7f8c8d; margin-bottom: 20px;">Crea un nuevo panel para tu club.</p>
+        <div class="input-group">
+            <input type="text" id="loginNombre" placeholder="Tu Nombre">
+            <input type="text" id="loginApellido" placeholder="Tu Apellido">
+            <input type="text" id="loginClub" placeholder="Nombre del Club / Organización">
+            <button onclick="iniciarSesion()" style="margin-top: 10px;">Registrar y Entrar</button>
+        </div>
 
-    <div id="appContainer" style="display: none;">
-        <div class="container">
-            <div class="user-panel">
-                <strong id="displayUserName">Usuario</strong><br>
-                <small id="displayClubName">Club</small><br>
-                <small id="displayUserId">ID: </small>
-                <button onclick="cerrarSesion()" style="background:#e74c3c; padding:5px; margin-top:10px;">Cerrar Sesión</button>
-            </div>
-            <div class="tabs">
-                <button id="btnTabAlumnos" class="active" onclick="switchTab('alumnos')">Alumnos</button>
-                <button id="btnTabEventos" onclick="switchTab('eventos')">Eventos</button>
-            </div>
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;">
 
-            <div id="tabAlumnos" class="tab-content active">
-                <div class="section">
-                    <h2>Nueva Clase</h2>
-                    <div class="input-group">
-                        <input type="text" id="className" placeholder="Nombre clase">
-                        <button onclick="addClass()">Agregar</button>
-                    </div>
-                </div>
-                <div class="section">
-                    <h2>Nuevo Alumno</h2>
-                    <div class="input-group">
-                        <input type="text" id="studentName" placeholder="Nombre">
-                        <select id="classSelect"></select>
-                        <button onclick="addStudent()">Registrar</button>
-                    </div>
-                </div>
-                <table id="studentsTable">
-                    <thead><tr><th>Nombre</th><th>Clase</th><th>Asist.</th><th>Pts</th><th>Acciones</th></tr></thead>
-                    <tbody id="studentTableBody"></tbody>
-                </table>
-            </div>
+        <p style="text-align: center; color: #7f8c8d; margin-bottom: 15px;">¿Ya tienes una cuenta?</p>
+        <div class="input-group">
+            <input type="text" id="loginId" placeholder="Ej. POLA-JG">
+            <button onclick="iniciarSesionConId()" style="background-color: #3498db;">Entrar con mi ID</button>
+        </div>
+    </div>
 
-            <div id="tabEventos" class="tab-content">
-                <div class="section">
-                    <h2>Nuevo Evento</h2>
-                    <div class="input-group">
-                        <input type="text" id="eventName" placeholder="Nombre evento">
-                        <button onclick="addEvent()">Guardar</button>
-                    </div>
-                </div>
-                <select id="eventSelect" onchange="renderEventTable()"></select>
-                <div id="eventDetails" style="display:none;">
-                    <h3 id="totalEventMoney">Total: $0.00</h3>
-                    <table id="eventTable">
-                        <thead><tr><th>Alumno</th><th>Abonado</th><th>¿Va?</th><th>Pago</th></tr></thead>
-                        <tbody id="eventTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="appContainer" style="display: none;">
+        <div class="container">
+            <h1>Control de Alumnos</h1>
 
-    <script>
-        const API_URL = 'https://api-alumnos-backend.onrender.com'; // Sin el /api al final
-        let sessionData = JSON.parse(localStorage.getItem('appControlAlumnos_session'));
-        let db = { classes: [], students: [], events: [] };
+            <div class="user-panel">
+                <strong id="displayUserName">Usuario</strong>
+                <small id="displayClubName">Club</small>
+                <small id="displayUserId" style="font-size: 0.8em; color: #bdc3c7;">ID: </small>
+                <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
 
-        async function checkSession() {
-            if (sessionData && sessionData.id_unico) {
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'block';
-                document.getElementById('displayUserName').innerText = `👤 ${sessionData.nombre} ${sessionData.apellido}`;
-                document.getElementById('displayClubName').innerText = `🛡️ Club: ${sessionData.club}`;
-                document.getElementById('displayUserId').innerText = `ID: ${sessionData.id_unico}`;
+            <div class="tabs">
+                <button id="btnTabAlumnos" class="active" onclick="switchTab('alumnos')">Alumnos y Clases</button>
+                <button id="btnTabEventos" onclick="switchTab('eventos')">Eventos y Cuotas</button>
+            </div>
 
-                try {
-                    const response = await fetch(`${API_URL}/api/data/${sessionData.id_unico}`);
-                    if (response.ok) {
-                        db = await response.json();
-                        updateDropdowns(); renderTable(); updateEventDropdown();
-                    }
-                } catch (e) { console.error("Error cargando datos", e); }
-            } else {
-                document.getElementById('loginContainer').style.display = 'block';
-                document.getElementById('appContainer').style.display = 'none';
-            }
-        }
+            <div id="tabAlumnos" class="tab-content active">
+                <div class="section">
+                    <h2>1. Crear Clase</h2>
+                    <div class="input-group">
+                        <input type="text" id="className" placeholder="Ej. Compañeros">
+                        <button onclick="addClass()">Agregar Clase</button>
+                    </div>
+                </div>
 
-        async function iniciarSesion() {
-            const nombre = document.getElementById('loginNombre').value.trim();
-            const apellido = document.getElementById('loginApellido').value.trim();
-            const club = document.getElementById('loginClub').value.trim();
-            if (nombre && apellido && club) {
-                const idGenerado = `${club.substring(0,4).toUpperCase()}-${(nombre.charAt(0)+apellido.charAt(0)).toUpperCase()}`;
-                try {
-                    const res = await fetch(`${API_URL}/api/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nombre, apellido, club, id_unico: idGenerado })
-                    });
-                    const data = await res.json();
-                    if (data.status === "success") {
-                        sessionData = data.user_data;
-                        localStorage.setItem('appControlAlumnos_session', JSON.stringify(sessionData));
-                        checkSession();
-                    }
-                } catch (e) { alert("Error de conexión"); }
-            }
-        }
+                <div class="section">
+                    <h2>2. Registrar Alumno</h2>
+                    <div class="input-group">
+                        <input type="text" id="studentName" placeholder="Nombre completo">
+                        <select id="classSelect">
+                            <option value="">Selecciona una clase...</option>
+                        </select>
+                        <button onclick="addStudent()">Registrar Alumno</button>
+                    </div>
+                </div>
 
-        async function iniciarSesionConId() {
-            const id = document.getElementById('loginId').value.trim().toUpperCase();
-            try {
-                const res = await fetch(`${API_URL}/api/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id_unico: id })
-                });
-                const data = await res.json();
-                if (data.status === "success") {
-                    sessionData = data.user_data;
-                    localStorage.setItem('appControlAlumnos_session', JSON.stringify(sessionData));
-                    checkSession();
-                } else { alert("ID no encontrado"); }
-            } catch (e) { alert("Error de conexión"); }
-        }
+                <div class="section">
+                    <h2>3. Gestión y Puntuaciones</h2>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label for="filterClass" style="font-weight: bold; color: #2c3e50;">Vista de clase:</label>
+                        <select id="filterClass" onchange="renderTable()">
+                            <option value="all">Todas las clases</option>
+                        </select>
+                    </div>
 
-        async function saveData() {
-            if (!sessionData) return;
-            try {
-                await fetch(`${API_URL}/api/data`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id_club: sessionData.id_unico, db: db })
-                });
-            } catch (e) { console.error("Error al guardar", e); }
-        }
+                    <table id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Clase</th>
+                                <th>Asistencias</th>
+                                <th>Puntos</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-        // Lógica de UI (Simplificada para el ejemplo)
-        function switchTab(t) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active');
-        }
+            <div id="tabEventos" class="tab-content">
+                <div class="section">
+                    <h2>1. Crear Nuevo Evento</h2>
+                    <div class="input-group">
+                        <input type="text" id="eventName" placeholder="Ej. Viaje Escolar / Graduación">
+                        <button onclick="addEvent()">Guardar Evento</button>
+                    </div>
+                </div>
 
-        function addClass() {
-            const n = document.getElementById('className').value;
-            if(n) { db.classes.push(n); updateDropdowns(); saveData(); }
-        }
+                <div class="section">
+                    <h2>2. Lista General y Cuotas</h2>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label for="eventSelect" style="font-weight: bold; color: #2c3e50;">Selecciona un evento:</label>
+                        <select id="eventSelect" onchange="renderEventTable()">
+                            <option value="">Selecciona un evento para ver la lista...</option>
+                        </select>
+                    </div>
 
-        function updateDropdowns() {
-            const s = document.getElementById('classSelect');
-            s.innerHTML = db.classes.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
+                    <div id="eventDetails" style="display:none; overflow-x: auto;">
+                        <h3 id="totalEventMoney" style="text-align: right; color: #27ae60; margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Total Recaudado: $0.00</h3>
+                        
+                        <table id="eventTable">
+                            <thead>
+                                <tr>
+                                    <th>Alumno (Clase)</th>
+                                    <th>Total Abonado</th> 
+                                    <th>¿Asistirá?</th>
+                                    <th>Pago / Cuota ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        function addStudent() {
-            const n = document.getElementById('studentName').value;
-            const c = document.getElementById('classSelect').value;
-            if(n && c) {
-                db.students.push({id: Date.now(), name: n, class: c, attendance: 0, participation: 0});
-                renderTable(); saveData();
-            }
-        }
+    <script>
+        // ==========================================
+        // CONFIGURACIÓN DE LA API
+        // ==========================================
+        // Conexión oficial al servidor en la nube (Render)
+        const API_URL = 'https://api-alumnos-backend.onrender.com/api'; 
+        
+        let sessionData = JSON.parse(localStorage.getItem('appControlAlumnos_session'));
+        let db = { classes: [], students: [], events: [] };
 
-        function renderTable() {
-            const b = document.getElementById('studentTableBody');
-            b.innerHTML = db.students.map(s => `<tr><td>${s.name}</td><td>${s.class}</td><td>${s.attendance}</td><td>${s.participation}</td><td><button onclick="upd(${s.id},'attendance',1)">+Asist</button></td></tr>`).join('');
-        }
+        // ==========================================
+        // SISTEMA DE SESIÓN Y CONEXIÓN A MYSQL
+        // ==========================================
+        async function checkSession() {
+            if (sessionData && sessionData.id_unico) {
+                // Ocultar login, mostrar app
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                
+                document.getElementById('displayUserName').innerText = `👤 ${sessionData.nombre} ${sessionData.apellido}`;
+                document.getElementById('displayClubName').innerText = `🛡️ Club: ${sessionData.club}`;
+                document.getElementById('displayUserId').innerText = `ID de Conexión: ${sessionData.id_unico}`;
 
-        function upd(id, field, val) {
-            const s = db.students.find(x => x.id === id);
-            if(s) { s[field] += val; renderTable(); saveData(); }
-        }
+                // --- DESCARGAR DATOS DESDE MYSQL ---
+                try {
+                    const response = await fetch(`${API_URL}/data/${sessionData.id_unico}`);
+                    if (response.ok) {
+                        db = await response.json();
+                        // Asegurarnos de que la estructura base exista
+                        if (!db.classes) db.classes = [];
+                        if (!db.students) db.students = [];
+                        if (!db.events) db.events = [];
+                    } else {
+                        console.error("Error al obtener los datos de la base de datos.");
+                    }
+                } catch (error) {
+                    console.error("No se pudo conectar con la API de Python.", error);
+                    alert("No se pudo conectar a la base de datos. Se usará una base de datos temporal vacía. Asegúrate de ejecutar el archivo Python.");
+                }
+                
+                // Refrescar vistas con los datos traídos
+                updateDropdowns();
+                renderTable();
+                updateEventDropdown();
+            } else {
+                document.getElementById('loginContainer').style.display = 'block';
+                document.getElementById('appContainer').style.display = 'none';
+            }
+        }
 
-        function cerrarSesion() { localStorage.clear(); location.reload(); }
+        async function iniciarSesion() {
+            const nombre = document.getElementById('loginNombre').value.trim();
+            const apellido = document.getElementById('loginApellido').value.trim();
+            const club = document.getElementById('loginClub').value.trim();
 
-        checkSession();
-    </script>
+            if (nombre && apellido && club) {
+                const iniciales = (nombre.charAt(0) + apellido.charAt(0)).toUpperCase();
+                const clubFormateado = club.substring(0,4).toUpperCase();
+                // Generamos un ID predecible para que la misma persona pueda volver a entrar
+                const idGenerado = `${clubFormateado}-${iniciales}`;
+
+                const sessionDataTemp = { nombre, apellido, club, id_unico: idGenerado };
+
+                try {
+                    const res = await fetch(`${API_URL}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(sessionDataTemp)
+                    });
+                    
+                    const responseData = await res.json();
+                    
+                    if (responseData.status === "success") {
+                        // Guardamos los datos oficiales que nos devuelve la base de datos
+                        sessionData = responseData.user_data;
+                        localStorage.setItem('appControlAlumnos_session', JSON.stringify(sessionData));
+                        checkSession(); 
+                    }
+                } catch (error) {
+                    alert("Error al conectar con el servidor.");
+                    console.error(error);
+                }
+            } else {
+                alert("Por favor, completa todos los campos para crear una cuenta.");
+            }
+        }
+
+        // --- NUEVA FUNCIÓN: INICIAR SESIÓN SOLO CON ID ---
+        async function iniciarSesionConId() {
+            const idConexion = document.getElementById('loginId').value.trim().toUpperCase();
+            
+            if (!idConexion) {
+                alert("Por favor, ingresa tu ID de conexión.");
+                return;
+            }
+
+            try {
+                // Le mandamos solo el ID al servidor
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_unico: idConexion })
+                });
+
+                const responseData = await res.json();
+
+                if (responseData.status === "success" && responseData.user_data) {
+                    // El servidor encontró el ID y nos devolvió el nombre y el club
+                    sessionData = responseData.user_data;
+                    localStorage.setItem('appControlAlumnos_session', JSON.stringify(sessionData));
+                    checkSession();
+                } else {
+                    alert("No se encontró ningún club registrado con ese ID.");
+                }
+            } catch (error) {
+                alert("Error al intentar iniciar sesión. Revisa tu conexión.");
+                console.error(error);
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('appControlAlumnos_session');
+            sessionData = null;
+            document.getElementById('loginNombre').value = '';
+            document.getElementById('loginApellido').value = '';
+            document.getElementById('loginClub').value = '';
+            document.getElementById('loginId').value = ''; // Limpiar el campo de ID
+            db = { classes: [], students: [], events: [] }; // Limpiar datos en memoria
+            checkSession();
+        }
+
+        // ==========================================
+        // FUNCIÓN CLAVE: GUARDAR EN MYSQL
+        // ==========================================
+        async function saveData() {
+            // Guardamos localmente por si la API falla
+            localStorage.setItem('appControlAlumnos', JSON.stringify(db));
+
+            if (sessionData && sessionData.id_unico) {
+                try {
+                    await fetch(`${API_URL}/data`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id_club: sessionData.id_unico,
+                            db: db
+                        })
+                    });
+                } catch (error) {
+                    console.error("Error al guardar los datos en MySQL:", error);
+                }
+            }
+        }
+
+        // ==========================================
+        // RESTO DE LA LÓGICA DE LA APLICACIÓN 
+        // ==========================================
+
+        function getStudentTotal(studentId) {
+            let total = 0;
+            db.events.forEach(ev => {
+                if (ev.attendees && ev.attendees[studentId] && ev.attendees[studentId].payment) {
+                    total += parseFloat(ev.attendees[studentId].payment) || 0;
+                }
+            });
+            return total;
+        }
+
+        function updateDropdowns() {
+            const classSelect = document.getElementById('classSelect');
+            const filterClass = document.getElementById('filterClass');
+
+            classSelect.innerHTML = '<option value="">Selecciona una clase...</option>';
+            filterClass.innerHTML = '<option value="all">Todas las clases</option>';
+
+            db.classes.forEach(cls => {
+                classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+                filterClass.innerHTML += `<option value="${cls}">${cls}</option>`;
+            });
+        }
+
+        function addClass() {
+            const className = document.getElementById('className').value.trim();
+            if (className && !db.classes.includes(className)) {
+                db.classes.push(className);
+                saveData(); 
+                updateDropdowns();
+                document.getElementById('className').value = '';
+            } else {
+                alert('Ingresa un nombre de clase válido o que no esté repetido.');
+            }
+        }
+
+        function addStudent() {
+            const name = document.getElementById('studentName').value.trim();
+            const cls = document.getElementById('classSelect').value;
+
+            if (name && cls) {
+                const newStudent = {
+                    id: Date.now(),
+                    name: name,
+                    class: cls,
+                    attendance: 0,
+                    participation: 0 
+                };
+                db.students.push(newStudent);
+                saveData(); 
+                renderTable();
+                renderEventTable(); 
+                document.getElementById('studentName').value = '';
+            } else {
+                alert('Asegúrate de ingresar el nombre y seleccionar una clase.');
+            }
+        }
+
+        function updatePoints(id, type, amount) {
+            const student = db.students.find(s => s.id === id);
+            if (student) {
+                student[type] += amount;
+                if (type === 'attendance' && student[type] < 0) { student[type] = 0; }
+                saveData(); 
+                renderTable();
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('studentTableBody');
+            const filter = document.getElementById('filterClass').value;
+            tbody.innerHTML = '';
+
+            const filteredStudents = filter === 'all' ? db.students : db.students.filter(s => s.class === filter);
+
+            filteredStudents.forEach(student => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${student.name}</strong></td>
+                        <td>${student.class}</td>
+                        <td style="font-weight:bold; color: #27ae60;">${student.attendance}</td>
+                        <td style="font-weight:bold; color: #2980b9;">${student.participation}</td>
+                        <td style="width: 100%;">
+                            <div class="action-buttons">
+                                <button class="btn-action btn-add" onclick="updatePoints(${student.id}, 'attendance', 1)">+1 Asistencia</button>
+                                <button class="btn-action btn-sub" onclick="updatePoints(${student.id}, 'attendance', -1)">-1 Asistencia</button>
+                                <button class="btn-action btn-add" onclick="updatePoints(${student.id}, 'participation', 1)">+1 Punto</button>
+                                <button class="btn-action btn-sub" onclick="updatePoints(${student.id}, 'participation', -1)">-1 Punto</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function switchTab(tab) {
+            document.getElementById('tabAlumnos').classList.remove('active');
+            document.getElementById('tabEventos').classList.remove('active');
+            document.getElementById('btnTabAlumnos').classList.remove('active');
+            document.getElementById('btnTabEventos').classList.remove('active');
+
+            if (tab === 'alumnos') {
+                document.getElementById('tabAlumnos').classList.add('active');
+                document.getElementById('btnTabAlumnos').classList.add('active');
+            } else {
+                document.getElementById('tabEventos').classList.add('active');
+                document.getElementById('btnTabEventos').classList.add('active');
+                updateEventDropdown(); 
+                renderEventTable(); 
+            }
+        }
+
+        function addEvent() {
+            const name = document.getElementById('eventName').value.trim();
+            if (name) {
+                const newEvent = {
+                    id: Date.now(),
+                    name: name,
+                    attendees: {} 
+                };
+                db.events.push(newEvent);
+                saveData(); 
+                updateEventDropdown();
+                document.getElementById('eventName').value = '';
+                document.getElementById('eventSelect').value = newEvent.id;
+                renderEventTable();
+            } else {
+                alert('Escribe un nombre para el evento.');
+            }
+        }
+
+        function updateEventDropdown() {
+            const eventSelect = document.getElementById('eventSelect');
+            const currentValue = eventSelect.value;
+            eventSelect.innerHTML = '<option value="">Selecciona un evento para ver la lista...</option>';
+            db.events.forEach(ev => {
+                eventSelect.innerHTML += `<option value="${ev.id}">${ev.name}</option>`;
+            });
+            eventSelect.value = currentValue; 
+        }
+
+        function renderEventTable() {
+            const eventId = document.getElementById('eventSelect').value;
+            const detailsDiv = document.getElementById('eventDetails');
+            const tbody = document.getElementById('eventTableBody');
+            const totalMoneyLabel = document.getElementById('totalEventMoney');
+            
+            if (!eventId) {
+                detailsDiv.style.display = 'none';
+                return;
+            }
+            
+            detailsDiv.style.display = 'block';
+            tbody.innerHTML = '';
+            
+            const ev = db.events.find(e => e.id == eventId);
+            
+            if(db.students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay alumnos registrados.</td></tr>`;
+                totalMoneyLabel.innerText = "Total Recaudado: $0.00";
+                return;
+            }
+
+            let totalMoney = 0; 
+            db.students.forEach(student => {
+                const data = ev.attendees[student.id] || { attending: false, payment: 0 };
+                const isChecked = data.attending ? 'checked' : '';
+                const paymentVal = parseFloat(data.payment) || 0;
+
+                if (data.attending) { totalMoney += paymentVal; }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <strong style="font-size: 1.1em;">${student.name}</strong> <br>
+                            <small style="color:gray;">${student.class}</small>
+                        </td>
+                        <td style="font-weight:bold; color: #8e44ad; font-size: 1.2em;">$${paymentVal.toFixed(2)}</td>
+                        <td><input type="checkbox" style="cursor: pointer;" ${isChecked} onchange="toggleEventAttendance(${ev.id}, ${student.id}, this.checked)"></td>
+                        <td style="width: 100%;">
+                            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                                <input type="number" placeholder="Monto a ingresar..." min="0" style="width: 100%; box-sizing: border-box;" ${!data.attending ? 'disabled' : ''} id="transact_${ev.id}_${student.id}">
+                                <div class="action-buttons">
+                                    <button class="btn-action btn-add" onclick="modifyPaymentAmount(${ev.id}, ${student.id}, 'add')" ${!data.attending ? 'disabled' : ''}>+ Abono</button>
+                                    <button class="btn-action btn-sub" onclick="modifyPaymentAmount(${ev.id}, ${student.id}, 'sub')" ${!data.attending ? 'disabled' : ''}>- Quitar</button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            totalMoneyLabel.innerText = "Total Recaudado del Evento: $" + totalMoney.toFixed(2);
+        }
+
+        function toggleEventAttendance(eventId, studentId, isAttending) {
+            const ev = db.events.find(e => e.id == eventId);
+            if (!ev.attendees[studentId]) { ev.attendees[studentId] = { attending: false, payment: 0 }; }
+            ev.attendees[studentId].attending = isAttending;
+            if(!isAttending) { ev.attendees[studentId].payment = 0; }
+            saveData(); 
+            renderEventTable(); 
+        }
+
+        function modifyPaymentAmount(eventId, studentId, action) {
+            const ev = db.events.find(e => e.id == eventId);
+            if (!ev || !ev.attendees[studentId] || !ev.attendees[studentId].attending) return;
+
+            const inputElement = document.getElementById(`transact_${eventId}_${studentId}`);
+            const inputValue = inputElement.value.trim();
+            
+            if (inputValue !== '') {
+                const amount = parseFloat(inputValue);
+                if (!isNaN(amount) && amount > 0) {
+                    let currentVal = parseFloat(ev.attendees[studentId].payment) || 0;
+                    if (action === 'add') { currentVal += amount; } 
+                    else { currentVal -= amount; if (currentVal < 0) currentVal = 0; }
+                    
+                    ev.attendees[studentId].payment = currentVal;
+                    saveData(); 
+                    renderEventTable(); 
+                } else {
+                    alert('Por favor ingrese un número mayor a 0.');
+                }
+            } else {
+                alert('Escribe una cantidad en la casilla blanca primero.');
+            }
+        }
+
+        // --- INICIAR APLICACIÓN ---
+        checkSession();
+    </script>
 </body>
 </html>
